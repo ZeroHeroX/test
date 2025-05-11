@@ -46,7 +46,7 @@ pipeline {
                         nohup java -jar target/test-001.jar > app.log 2>&1 &
                         echo $! > app.pid
                     '''
-                    echo "应用已启动，PID: $(cat app.pid)"
+                    echo '应用已启动，PID: $(cat app.pid)'
                 }
             }
         }
