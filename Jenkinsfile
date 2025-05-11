@@ -28,16 +28,15 @@ pipeline {
                 script {
                     // 终止旧进程（避免端口冲突）
                     sh '''
-                        if [ -f app.pid ]; then
-                            kill -9 $(cat app.pid) || true
-                            rm -f app.pid
+                        PID=$(lsof -ti :9090)
+                        if [ -n "$PID" ]; then
+                            kill -9 $PID
+                            echo "已终止占用9090端口的进程：$PID"
                         fi
                     '''
-                    echo "旧进程已终止"
                 }
             }
         }
-
 
         stage('Run') {
             steps {
