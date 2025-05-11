@@ -1,46 +1,63 @@
 pipeline {
-    agent any  // 在任何可用节点执行
+    agent any
     environment {
-        JENKINS_NODE_COOKIE='dontKillMe'
+        // 防止Jenkins杀死后台进程（Pipeline类型必须用这个变量）
+        JENKINS_NODE_COOKIE = 'dontKillMe'
     }
-    // 防止
     tools {
-        maven 'maven_3.9.9'  // 需在 Jenkins 全局工具中预配置 Maven
-        jdk 'jdk_17.0.14'         // 需配置 JDK 名称
+        maven 'maven_3.9.9'
+        jdk 'jdk_17.0.14'
     }
     stages {
-        // 阶段 1: 拉取代码
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                url: 'https://github.com/ZeroHeroX/test',
-                credentialsId: '5c2a6364-0c99-4f1f-9988-fc9fb9ac850b'  // Jenkins 中配置的 Git 凭据 ID
+                     url: 'https://github.com/ZeroHeroX/test',
+                     credentialsId: '5c2a6364-0c99-4f1f-9988-fc9fb9ac850b'
             }
         }
 
-        // 阶段 2: 编译与打包
         stage('Build') {
             steps {
-                sh 'mvn clean package -DskipTests'  // 跳过测试以加速构建
+                sh 'mvn clean package -DskipTests'
             }
         }
 
-        // 阶段 3: 运行应用
+        stage('Stop Old Process') {
+            steps {
+                script {
+                    // 终止旧进程（避免端口冲突）
+                    sh '''
+                        if [ -f app.pid ]; then
+                            kill -9 $(cat app.pid) || true
+                            rm -f app.pid
+                        fi
+                    '''
+                    echo "旧进程已终止"
+                }
+            }
+        }
+
         stage('Run') {
             steps {
                 script {
-                    // 后台运行并记录 PID
-                    sh 'nohup java -jar target/test-001.jar > /dev/null 2>&1 & echo $! > app.pid'
-                    echo "应用已启动，PID 存储在 app.pid 文件中"
+                    // 启动新进程并记录PID
+                    sh '''
+                        nohup java -jar target/test-001.jar > app.log 2>&1 &
+                        echo $! > app.pid
+                    '''
+                    echo "应用已启动，PID: $(cat app.pid)"
                 }
             }
         }
     }
     post {
-        // 构建后清理
         always {
-            archiveArtifacts artifacts: 'target/*.jar', allowEmptyArchive: true  // 保存构建产物
-//             junit 'target/surefire-reports/**/*.xml'  // 收集测试报告（即使跳过测试）
+            archiveArtifacts artifacts: 'target/*.jar, app.log', allowEmptyArchive: true
+        }
+        cleanup {
+            // 清理残留文件（可选）
+            deleteDir()
         }
     }
 }
