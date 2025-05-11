@@ -1,7 +1,7 @@
 pipeline {
     agent any  // 在任何可用节点执行
     environment {
-        JENKINS_NODE_COOKIE=dontKillMe
+        JENKINS_NODE_COOKIE='dontKillMe'
     }
     tools {
         maven 'maven_3.9.9'  // 需在 Jenkins 全局工具中预配置 Maven
