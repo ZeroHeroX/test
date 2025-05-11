@@ -36,7 +36,7 @@ pipeline {
         // 构建后清理
         always {
             archiveArtifacts artifacts: 'target/*.jar', allowEmptyArchive: true  // 保存构建产物
-            junit 'target/surefire-reports/**/*.xml'  // 收集测试报告（即使跳过测试）
+//             junit 'target/surefire-reports/**/*.xml'  // 收集测试报告（即使跳过测试）
         }
     }
 }
