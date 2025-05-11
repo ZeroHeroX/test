@@ -3,6 +3,7 @@ pipeline {
     environment {
         JENKINS_NODE_COOKIE='dontKillMe'
     }
+    // 防止
     tools {
         maven 'maven_3.9.9'  // 需在 Jenkins 全局工具中预配置 Maven
         jdk 'jdk_17.0.14'         // 需配置 JDK 名称
