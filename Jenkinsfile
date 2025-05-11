@@ -28,7 +28,7 @@ pipeline {
                 script {
                     // 终止旧进程（避免端口冲突）
                     sh '''
-                        PID=$(lsof -ti :9090)
+                        PID=$(lsof -ti :9090 || true)
                         if [ -n "$PID" ]; then
                             kill -9 $PID
                             echo "已终止占用9090端口的进程：$PID"
